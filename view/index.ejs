@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View data</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="header-container">
+        <div class="logo-web">
+            <img src="image/logo.png" alt="" srcset="">
+        </div>
+        <div class="price-range" title="Khoảng giá">
+            <input type="text" id="min_price" class="price" placeholder="Giá thấp nhất">
+            <span><i class="fa-solid fa-minus"></i></span>
+            <input type="text" id="max_price" class="price" placeholder="Giá cao nhất">
+        </div>
+        <div class="search">
+            <form action="" id="search_form">
+                <input type="text">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+        </div>
+        <div class="to-table-container">
+            <span>Go to </span>
+            <select id="tableSelector">
+                <option value="table_1">Table 1</option>
+                <option value="table_2">Table 2</option>
+                <option value="table_3">Table 3</option>
+                <option value="table_4">Table 4</option>
+                <option value="table_5">Table 5</option>
+                <option value="table_6">Table 6</option>
+            </select>
+        </div>
+        <div class="logout-container">
+            <button id="logout" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+    </div>
+    <div class="sheets-container">
+        <table id="table_1" class="table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+        <table id="table_2" class="table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+        <table id="table_3" class="table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+        <table id="table_4" class="table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+        <table id="table_5" class="table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+        <table id="table_6" class="table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+    </div>
+    <button class="to-top-btn"><i class="fa-solid fa-chevron-up"></i></button>
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+</body>
+<script src="js/index.js"></script>
+<script src="js/logout.js"></script>
+</html>
