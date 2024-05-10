@@ -15,32 +15,7 @@
 
 <body> 
     <div class="header-container">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark ">
-            <div class="container">
-                <a class="navbar-brand" href="/">EXCEL</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-        
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <div class="nav-item">
-                        <a class="nav-link  mr-8" href="/admin"><i class="fa-solid fa-user-gear"></i></a>
-                    </div>
-        
-                    <form class="search-form" method="post" action="/search" >
-                        <input type="text" name="searchText">
-                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    </form>
-        
-                    <div class="logout-container">
-                        <button id="logout" title="Đăng xuất" class="btn logout-btn btn-link"><i class="fa-solid fa-right-from-bracket"></i></button>
-                    </div>
-                </div>
-            </div>
-        
-            
-        </nav>
+            <%- include ("../partials/header") %>
     </div>
     <div class="sheets-container">
         <table id="table_1" class="table">
@@ -67,8 +42,15 @@
             <thead></thead>
             <tbody></tbody>
         </table>
-    </div>    
+    </div> 
+    <div class="window"></div>   
+    <div class="description"></div>
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
 </body>
-<script src="js/index.js"></script>
+<!-- <script src="js/index.js"></script> -->
+<script src="js/admin.js"></script>
+
 <script src="js/logout.js"></script>
 </html>

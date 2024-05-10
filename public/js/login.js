@@ -44,25 +44,25 @@ $(document).ready(function() {
             "Content-Type" : "application/json"
         },
         body: JSON.stringify(account)
-    })
-    .then(response => {
-        return response.json().then(data => {
-            if (!response.ok) {
-                showNotification(data.message);
-                throw new Error('Network response was not ok');
-            }
-            return data;
-        });
-    })
-    .then(result => {
-        localStorage.setItem('jwtToken', result.token);
+        })
+        .then(response => {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    showNotification(data.message);
+                    throw new Error('Network response was not ok');
+                }
+                return data;
+            });
+        })
+        .then(result => {
+            localStorage.setItem('jwtToken', result.token);
 
-        window.location.href = 'http://localhost:3000/';
-    })
-    .catch(error => {
-        console.error('There was a problem with your fetch operation:', error);
-    });
-    });
+            window.location.href = 'http://localhost:3000/';
+        })
+        .catch(error => {
+            console.error('There was a problem with your fetch operation:', error);
+        });
+        });
 
     $('#registerForm').on('submit', function(event) {
         event.preventDefault();
@@ -105,7 +105,7 @@ $(document).ready(function() {
             role: 'user'
         }
 
-        console.log(account)
+        // console.log(account)
 
         fetch('http://localhost:3000/api/register', {
             method: "POST",
@@ -124,8 +124,8 @@ $(document).ready(function() {
             });
         })
         .then(result => {
-            // localStorage.setItem('jwtToken', result.token);
-
+            localStorage.setItem('jwtToken', result.token);
+            
             showNotification(result.message);
 
             setTimeout(function() {

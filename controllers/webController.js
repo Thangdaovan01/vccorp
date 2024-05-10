@@ -9,7 +9,7 @@ const getLoginPage = async (req, res) => {
         return res.status(404).json('Server error');
     }
 }
-
+  
 const getHomepage = async (req, res) => {
     try {
         return res.status(200).render('index');
@@ -19,6 +19,16 @@ const getHomepage = async (req, res) => {
     }
 }
 
+const getAdminPage = async (req, res) => {
+    try {
+        return res.status(200).render('admin/homepage');
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json('Server error');
+    }
+}
+
 module.exports = {
-    getLoginPage, getHomepage
+    getLoginPage, getHomepage,
+    getAdminPage
 }
