@@ -893,27 +893,44 @@ $(document).ready(function() {
         $("body").children().removeClass("blur");
     });
 
-    
+    $('#search_form').submit(function(event){
+        event.preventDefault();
+        key = $('#search_form input[type="text"]').val().toLowerCase();
+        console.log(key);
+        search(key);
+        $('#search_form input[type="text"]').val('');
+    });
 
 });
 
 
 async function showData(excels) {
-    let table_1 = excels.filter(item => item.type === 1);
-    // console.log("excelsTypeOne",table_1);
-    showData1(table_1);
 
-    let table_2 = excels.filter(item => item.type === 2);
-    showData2(table_2);
+    const uniqueTypes = [...new Set(excels.map(item => item.type))];
 
-    let table_3 = excels.filter(item => item.type === 3);
-    showData3(table_3);
-
-    let table_4 = excels.filter(item => item.type === 4);
-    showData4(table_4);
-
-    let table_5 = excels.filter(item => item.type === 5);
-    showData5(table_5);
+    for(let i=0; i<uniqueTypes.length;i++){
+        if(uniqueTypes[i]==1){
+            let table_1 = excels.filter(item => item.type === 1);
+            showData1(table_1);
+        }
+        if(uniqueTypes[i]==2){
+            let table_2 = excels.filter(item => item.type === 2);
+            showData2(table_2);
+        }
+        if(uniqueTypes[i]==3){
+            let table_3 = excels.filter(item => item.type === 3);
+            showData3(table_3);
+        }
+        if(uniqueTypes[i]==4){
+            let table_4 = excels.filter(item => item.type === 4);
+            showData4(table_4);
+        }
+        if(uniqueTypes[i]==5){
+            let table_5 = excels.filter(item => item.type === 5);
+            showData5(table_5);
+        }
+    }
+    
 }
 
 async function showData1(excels) {
@@ -1430,6 +1447,41 @@ function updateRow (updateRow) {
     .catch(error => {
         console.error('There was a problem with your fetch operation:', error);
     });
+}
+
+function search (value) {
+    
+
+    fetch(`http://localhost:3000/api/row?key=${ value }`, {
+            method: "GET",
+            headers: {
+                "Content-Type" : "application/json",
+                "Authorize" : token
+            }
+        })
+        .then(response => {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    showNotification(data.message);
+                    throw new Error('Network response was not ok');
+                }
+                return data;
+            });
+        })
+        .then(result => {
+            var data = result;
+            console.log("data",data);
+            $(".table").each(function() {
+                $(this).find("thead").empty();
+                $(this).find("tbody").empty();
+                $(this).find("tfoot").empty();
+            });
+            showData(data);
+        })
+        .catch(error => {
+            console.error('There was a problem with your fetch operation:', error);
+        });
+    
 }
 
 function showNotification(message) {

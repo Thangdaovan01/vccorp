@@ -24,7 +24,8 @@ const login = async (req, res) => {
             } else {
                 // Mật khẩu khớp, tiếp tục xử lý đăng nhập
                 const token = generateToken(account);
-                return res.status(200).json({ message: 'Đăng nhập thành công', token: token });
+
+                return res.status(200).json({ message: 'Đăng nhập thành công', token: token, role: existingUser.role});
             }
         }
 
@@ -64,8 +65,6 @@ const register = async (req, res) => {
     }
 }
 
-
- 
 const getStyle = async (req, res) => {
     try {
         Excel.find({}) 
@@ -77,6 +76,40 @@ const getStyle = async (req, res) => {
             console.error(error);
             return res.status(500).json({ message: 'Đã xảy ra lỗi trong quá trình xử lý 2' });
         }); 
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json('Server error');
+    }
+}
+
+const getRow = async (req, res) => {
+    
+    try {
+        const searchValue = req.query.key;
+        console.log("searchValue",searchValue);
+
+        if (!searchValue) {
+            return res.status(400).json({ message: 'Vui lòng nhập giá trị tìm kiếm'});
+        }
+        const excels = await Excel.find({
+            $or: [
+                { website: { $regex: searchValue, $options: 'i' } }, // Tìm theo tiêu đề, không phân biệt hoa thường
+                { position: { $regex: searchValue, $options: 'i' } },
+                { dimensions: { $regex: searchValue, $options: 'i' } },
+                { platform: { $regex: searchValue, $options: 'i' } },
+                { buying_method: { $regex: searchValue, $options: 'i' } },
+            ]
+        });
+
+
+        console.log("excels",excels);
+
+
+        if (!excels || !excels.length) {
+            return res.status(400).json({ message: 'Không có giá trị cần tìm kiếm'});
+        } else {
+            return res.status(200).json(excels);
+        }
     } catch (error) {
         console.error(error);
         return res.status(404).json('Server error');
@@ -148,7 +181,6 @@ const updateRow = async (req, res) => {
     }
 }
 
-
 const deleteRow = async (req, res) => {
     try {
         // const idRow = req.body.idRow;
@@ -185,5 +217,5 @@ function getIdFromtUsername(username, array) {
 module.exports = {
     login, register,
     getStyle, 
-    deleteRow, createRow, updateRow
+    deleteRow, createRow, updateRow, getRow
 }

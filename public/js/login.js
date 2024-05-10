@@ -56,8 +56,12 @@ $(document).ready(function() {
         })
         .then(result => {
             localStorage.setItem('jwtToken', result.token);
-
-            window.location.href = 'http://localhost:3000/';
+            console.log("result",result.role);
+            if(result.role==='user'){
+                window.location.href = 'http://localhost:3000/';
+            } else if(result.role==='admin'){
+                window.location.href = 'http://localhost:3000/admin';
+            }
         })
         .catch(error => {
             console.error('There was a problem with your fetch operation:', error);

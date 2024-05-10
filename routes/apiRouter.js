@@ -7,6 +7,7 @@ apiRouter.post('/login', apiController.login);
 apiRouter.get('/style', apiController.getStyle); 
 apiRouter.post('/register', apiController.register);
 
+apiRouter.get('/row', apiController.getRow);
 apiRouter.post('/row', apiController.createRow);
 apiRouter.put('/row', apiController.updateRow);
 apiRouter.delete('/row', apiController.deleteRow);
