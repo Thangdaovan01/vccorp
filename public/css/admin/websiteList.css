@@ -1,0 +1,79 @@
+.websites-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.websites-container table thead th {
+    font-size: 16px !important;
+}
+
+.website-name {
+    width: 200px;
+}
+
+.website-name a {
+    width: 200px;
+    color: #000;
+}
+
+.website-link {
+    width: 500px;
+}
+
+.website-link a {
+    width: 500px;
+    font-weight:600;
+    font-style: italic;
+    text-decoration: none;
+    text-decoration-color: inherit;
+    color: #2f74b4;
+    overflow: hidden;
+}
+
+.action {
+    width: 100px;
+}
+
+tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+tbody td {
+    border: 1px solid #dddbdb !important;
+    font-size: 16px;
+    height: 40px !important;
+}
+
+.action {
+    display: flex;
+    padding: 0 15px;
+    justify-content: space-between;
+}
+
+.action button {
+    background-color: transparent;
+    border: 0;
+}
+
+.update-btn {
+    color: #ecbf44;
+}
+
+.delete-btn {
+    color: #f13232;
+}
+
+.row-website .save-update-website-btn {
+    background-color: transparent;
+    color: #fff;
+    width: 120px;
+    height: 40px;
+    border: 0;
+    border-radius: 20px;
+}
+
+.row-website .save-update-website-btn:hover {
+  background-color: #3987b8;
+
+}

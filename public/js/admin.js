@@ -2,6 +2,9 @@ var styles = [];
 const token = localStorage.getItem('jwtToken');
 
 $(document).ready(function() {
+
+    $("#priceList").addClass("active");
+
     fetch('http://localhost:3000/api/style', {
         method: "GET",
         headers: {
@@ -28,6 +31,7 @@ $(document).ready(function() {
     });
    
 
+
     $(document).on('click', '.create-row-container', function(event) { 
         event.stopPropagation();
         console.log("Button clicked!");
@@ -45,6 +49,7 @@ $(document).ready(function() {
                 <h3>Dữ liệu mới</h3>
                 <span>Website </span>
                 <select class="form-control" id="select_table_to_add">
+                    <option value="">Thêm dữ liệu mới</option>
         `
         uniqueWebsites.forEach(function(optionValue) {
             // Thêm vào chuỗi HTML của phần tử <option> với giá trị và nội dung tương ứng
@@ -90,10 +95,10 @@ $(document).ready(function() {
             </div>
             <div class="demo-container form-group">
                 <label for="demo">DEMO (*)</label>
-
                 <div class="form-row form-group">
-                    <input class="form-control col content" type="text" placeholder="Content">
-                    <input class="form-control col link-demo" type="text" placeholder="Link demo">
+                    <input class="form-control content" type="text" placeholder="Content">
+                    <i class="fa-solid fa-link"></i>
+                    <input class="form-control link-demo" type="text" placeholder="Link demo">
                 </div>
                 <button class="add-demo " title="Thêm demo"><i class="fa-solid fa-plus"></i></button>
 
@@ -108,6 +113,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -125,7 +132,7 @@ $(document).ready(function() {
                         <label for="ctr">Average CTR (%)</label>
                         <input type="text" class="form-control" id="ctr" name="ctr">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group col">
                         <label for="est">Est</label>
                         <input type="text" class="form-control" id="est" name="est">
                     </div>
@@ -141,6 +148,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -173,6 +182,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -205,6 +216,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -267,10 +280,8 @@ $(document).ready(function() {
 
     $(document).on('click', '.save-new-website', function(event) {
         event.stopPropagation();
-        console.log('click .save-new-website')
 
         var $data = $(this).siblings('div');
-        
         var website = $(this).siblings('div.website-name').attr('value');
         var website_link = getWeblinkFromWebsite(website, styles);
         var no = getNoFromWebsite(website, styles);
@@ -279,9 +290,6 @@ $(document).ready(function() {
         var platform = $data.find('#platform').val().trim();
         var type = getTypeFromWebsite(website, styles);
         
-
-        // console.log(type,website, position, dimensions, platform, buying_method, homepage, cross_site_roadblock, ctr, est)
-
         // Khởi tạo hai mảng để lưu giá trị
         var contentValues = [];
         var linkDemoValues = [];
@@ -340,7 +348,6 @@ $(document).ready(function() {
                 est: est 
             }
         }
-    
 
         if(type===2){
             var buying_method = $data.find('#buying_method').val().trim();
@@ -460,8 +467,9 @@ $(document).ready(function() {
         for (var j = 0; j < currentRow[0].demo.length; j++) {
             demoRowHTML += `
             <div class="form-row form-group">
-                <input class="form-control col content" type="text" placeholder="Content" value="${currentRow[0].demo[j]}">
-                <input class="form-control col link-demo" type="text" placeholder="Link demo" value="${currentRow[0].demo_link[j]}">
+                <input class="form-control  content" type="text" placeholder="Content" value="${currentRow[0].demo[j]}">
+                <i class="fa-solid fa-link"></i>
+                <input class="form-control  link-demo" type="text" placeholder="Link demo" value="${currentRow[0].demo_link[j]}">
                 <button class="remove-demo" title="Loại bỏ demo này"><i class="fa-solid fa-xmark"></i></button>
             </div>
             `;
@@ -507,6 +515,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -539,6 +549,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -571,6 +583,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -603,6 +617,8 @@ $(document).ready(function() {
                             <option value="Độc quyền ngày">Độc quyền ngày</option>
                             <option value="Chia sẻ 5/ngày">Chia sẻ 5/ngày</option>
                             <option value="Chia sẻ 5/tuần">Chia sẻ 5/tuần</option>
+                            <option value="Chia sẻ 3/ngày">Chia sẻ 3/ngày</option>
+                            <option value="Chia sẻ 3/tuần">Chia sẻ 3/tuần</option>
                         </select>
                     </div>
                     <div class="form-group col">
@@ -855,7 +871,6 @@ $(document).ready(function() {
             // Ẩn đi phần tử .window
             $('.window').hide();
             $("body").children().removeClass("blur");
-
         }
     });
 
@@ -864,12 +879,11 @@ $(document).ready(function() {
 
         var newElement = `
                 <div class="form-row form-group">
-                    <input class="form-control col content" type="text" placeholder="Content">
-                    <input class="form-control col link-demo" type="text" placeholder="Link demo">
-                <button class="remove-demo" title="Loại bỏ demo này"><i class="fa-solid fa-xmark"></i></button>
-
+                    <input class="form-control  content" type="text" placeholder="Content">
+                    <i class="fa-solid fa-link"></i>
+                    <input class="form-control  link-demo" type="text" placeholder="Link demo">
+                    <button class="remove-demo" title="Loại bỏ demo này"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-
         `;
         
         $(this).before(newElement);
@@ -907,30 +921,35 @@ $(document).ready(function() {
 async function showData(excels) {
 
     const uniqueTypes = [...new Set(excels.map(item => item.type))];
-
+ 
     for(let i=0; i<uniqueTypes.length;i++){
         if(uniqueTypes[i]==1){
             let table_1 = excels.filter(item => item.type === 1);
+            table_1.sort((a, b) => a.no - b.no);
             showData1(table_1);
         }
         if(uniqueTypes[i]==2){
             let table_2 = excels.filter(item => item.type === 2);
+            table_2.sort((a, b) => a.no - b.no);
             showData2(table_2);
         }
         if(uniqueTypes[i]==3){
             let table_3 = excels.filter(item => item.type === 3);
+            table_3.sort((a, b) => a.no - b.no);
             showData3(table_3);
         }
         if(uniqueTypes[i]==4){
             let table_4 = excels.filter(item => item.type === 4);
+            table_4.sort((a, b) => a.no - b.no);
             showData4(table_4);
         }
         if(uniqueTypes[i]==5){
             let table_5 = excels.filter(item => item.type === 5);
+            table_5.sort((a, b) => a.no - b.no);
             showData5(table_5);
         }
     }
-    
+     
 }
 
 async function showData1(excels) {
@@ -984,7 +1003,7 @@ async function showData1(excels) {
         setDemoHTML = `<td class="demo"><div>${ setDemo }</div></td>`;
 
         var row = `` 
-        row += `
+        row = `
         <tr class="row-table" id='${ excels[i]._id }'>
             <td class="action">
                 <button id="update" data-value="${ excels[i]._id }" title="Cập nhật dữ liệu" class="btn update-btn btn-link"><i class="fa-solid fa-pen"></i></button>
@@ -999,18 +1018,13 @@ async function showData1(excels) {
 
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
             <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
-            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock }</td>
+            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock ? numterToString(excels[i].cross_site_roadblock) : ""}</td>
             <td class="ctr">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
 
-        // document.querySelector(`#table_${ excels[0].type } tbody`).innerHTML = row;
-        // document.querySelector(`#table_${ excels[0].type } tbody`).insertAdjacentHTML('beforeend', row);
         $(`#table_${ excels[0].type } tbody`).append(row);
-
-        // console.log("row",row);
-
     }
 
 }
@@ -1073,9 +1087,9 @@ async function showData2(excels) {
             ${ setDemoHTML }
 
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
-            <td class="homepage">${ excels[i].price ? numterToString(excels[i].price) : "" }</td>
-            <td class="cross_site_roadblock">${ excels[i].ctr }</td>
-            <td class="ctr">${ excels[i].est }</td>
+            <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
+            <td class="cross_site_roadblock">${ excels[i].ctr ? numterToString(excels[i].ctr) : "" }</td>
+            <td class="ctr">${ excels[i].est ? numterToString(excels[i].est) : "" }</td>
             <td class="est">${ excels[i].note }</td>
         </tr>
         `;
@@ -1146,7 +1160,7 @@ async function showData3(excels) {
             <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
             <td class="cross_site_roadblock">${ excels[i].xuyentrang ? numterToString(excels[i].xuyentrang) : "" }</td>
             <td class="ctr">${ excels[i].chuyenmuc ? numterToString(excels[i].chuyenmuc) : "" }</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
 
@@ -1215,9 +1229,9 @@ async function showData4(excels) {
 
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
             <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
-            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock }</td>
+            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock ? numterToString(excels[i].cross_site_roadblock) : ""}</td>
             <td class="ctr">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
         $(`#table_${ excels[0].type } tbody`).append(row);
@@ -1287,7 +1301,7 @@ async function showData5(excels) {
             <td class="homepage">${ excels[i].month ? numterToString(excels[i].month) : "" }</td>
             <td class="cross_site_roadblock">${ excels[i].quarter ? numterToString(excels[i].quarter) : "" }</td>
             <td class="ctr">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
         $(`#table_${ excels[0].type } tbody`).append(row);
@@ -1439,10 +1453,28 @@ function updateRow (updateRow) {
     .then(result => {
         showNotification(result.message);
 
-        setTimeout(function() {
-            window.location.href = 'http://localhost:3000/admin';
-        }, 500);
+        // setTimeout(function() {
+        //     window.location.href = 'http://localhost:3000/admin';
+        // }, 500);
+
+        var $row = $(`#${updateRow._id}`);
+        $row.find('.position').text(updateRow.position);
+        $row.find('.dimensions').text(updateRow.dimensions);
+        $row.find('.platform').text(updateRow.platform);
+
+        const lastFiveKey = Object.keys(updateRow).slice(-5);
+        for(let i=0; i<lastFiveKey.length; i++){
+            $row.find(`.${lastFiveKey[i]}`).text(numterToString(updateRow[`${lastFiveKey[i]}`]));
+        }
     
+        $row.find('.action .update-btn').attr('data-value', updateRow._id);
+        $row.find('.action .delete-btn').attr('onclick', `deleteRow('${updateRow._id}');`);
+
+        $('.window').hide();
+        $("body").children().removeClass("blur");
+
+        highlightRow( $row, 'highlight-yellow')
+   
     })
     .catch(error => {
         console.error('There was a problem with your fetch operation:', error);

@@ -12,5 +12,14 @@ apiRouter.post('/row', apiController.createRow);
 apiRouter.put('/row', apiController.updateRow);
 apiRouter.delete('/row', apiController.deleteRow);
 // apiRouter.get('/authentication', apiController.authentication);
+ 
+apiRouter.get('/account', apiController.getAccount);
+apiRouter.get('/accounts', apiController.getAccounts);
+apiRouter.put('/account', apiController.updateAccount);
+apiRouter.delete('/account', apiController.deleteAccount);
+
+apiRouter.get('/websites', apiController.getWebsites);
+apiRouter.put('/website', apiController.updateWebsite);
+apiRouter.delete('/website', apiController.deleteWebsite);
 
 module.exports = apiRouter;

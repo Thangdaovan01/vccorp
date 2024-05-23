@@ -28,7 +28,25 @@ const getAdminPage = async (req, res) => {
     }
 }
 
+const getAccountList = async (req, res) => {
+    try {
+        return res.status(200).render('admin/accounts');
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json('Server error');
+    }
+}
+
+const getWebsiteList = async (req, res) => {
+    try {
+        return res.status(200).render('admin/websiteList');
+    } catch (error) {
+        console.error(error);
+        return res.status(404).json('Server error');
+    }
+}
+
 module.exports = {
     getLoginPage, getHomepage,
-    getAdminPage
+    getAdminPage, getAccountList, getWebsiteList
 }

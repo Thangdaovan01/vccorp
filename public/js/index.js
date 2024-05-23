@@ -48,22 +48,27 @@ async function showData(excels) {
     for(let i=0; i<uniqueTypes.length;i++){
         if(uniqueTypes[i]==1){
             let table_1 = excels.filter(item => item.type === 1);
+            table_1.sort((a, b) => a.no - b.no);
             showData1(table_1);
         }
         if(uniqueTypes[i]==2){
             let table_2 = excels.filter(item => item.type === 2);
+            table_2.sort((a, b) => a.no - b.no);
             showData2(table_2);
         }
         if(uniqueTypes[i]==3){
             let table_3 = excels.filter(item => item.type === 3);
+            table_3.sort((a, b) => a.no - b.no);
             showData3(table_3);
         }
         if(uniqueTypes[i]==4){
             let table_4 = excels.filter(item => item.type === 4);
+            table_4.sort((a, b) => a.no - b.no);
             showData4(table_4);
         }
         if(uniqueTypes[i]==5){
             let table_5 = excels.filter(item => item.type === 5);
+            table_5.sort((a, b) => a.no - b.no);
             showData5(table_5);
         }
     }
@@ -176,9 +181,9 @@ async function showData1(excels) {
             ${ setDemoHTML }
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
             <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
-            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock }</td>
+            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock ? numterToString(excels[i].cross_site_roadblock) : ""}</td>
             <td class="ctr">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
 
@@ -294,9 +299,9 @@ async function showData2(excels) {
             ${ setDemoHTML }
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
             <td class="homepage">${ excels[i].price ? numterToString(excels[i].price) : "" }</td>
-            <td class="cross_site_roadblock">${ excels[i].ctr }</td>
-            <td class="ctr">${ excels[i].est }</td>
-            <td class="est">${ excels[i].note }</td>
+            <td class="cross_site_roadblock">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
+            <td class="ctr">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
+            <td class="est">${ excels[i].note ? numterToString(excels[i].note) : ""}</td>
         </tr>
         `;
 
@@ -414,7 +419,7 @@ async function showData3(excels) {
             <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
             <td class="cross_site_roadblock">${ excels[i].xuyentrang ? numterToString(excels[i].xuyentrang) : "" }</td>
             <td class="ctr">${ excels[i].chuyenmuc ? numterToString(excels[i].chuyenmuc) : "" }</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
 
@@ -530,9 +535,9 @@ async function showData4(excels) {
             ${ setDemoHTML }
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
             <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
-            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock }</td>
+            <td class="cross_site_roadblock">${ excels[i].cross_site_roadblock ? numterToString(excels[i].cross_site_roadblock) : ""}</td>
             <td class="ctr">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
 
@@ -650,7 +655,7 @@ async function showData5(excels) {
             <td class="homepage">${ excels[i].month ? numterToString(excels[i].month) : "" }</td>
             <td class="cross_site_roadblock">${ excels[i].quarter ? numterToString(excels[i].quarter) : "" }</td>
             <td class="ctr">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
-            <td class="est">${ excels[i].est }</td>
+            <td class="est">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
         </tr>
         `;
 
