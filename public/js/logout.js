@@ -3,7 +3,7 @@ $(document).ready(function() {
         event.stopPropagation();
 
         if (confirm('Xác nhận đăng xuất')) {
-            // localStorage.removeItem('jwtToken');
+            localStorage.removeItem('jwtToken');
         
             window.location.href = 'http://localhost:3000/login-register';
         }

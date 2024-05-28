@@ -57,15 +57,22 @@ const register = async (req, res) => {
 
 const getStyle = async (req, res) => {
     try {
-        Excel.find({}) 
-        .lean() 
-        .then((excels) => {
-            return res.status(200).json(excels);
-        })
-        .catch(error => {
-            console.error(error);
-            return res.status(500).json({ message: 'Đã xảy ra lỗi trong quá trình xử lý 2' });
-        }); 
+        const token = req.header('Authorize');
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+        const checkAcc = decodeToken(token);
+        
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+        if(!existingUser){
+            return res.status(401).json({ message: 'Không có tài khoản' })
+        }
+
+        const websites = await Excel.find({});
+        const accounts = await User.find({});
+        return res.status(200).json({websites: websites, accounts: accounts, token: existingUser});
+
+       
     } catch (error) {
         console.error(error);
         return res.status(404).json('Server error');
@@ -78,7 +85,6 @@ const createRow = async (req, res) => {
     try {
         const newRow = req.body;
         const token = req.header('Authorize');
-        console.log("token",token);
 
         if (!token) {
             return res.status(401).json({ message: 'Không xác thực được danh tính' })
@@ -87,16 +93,16 @@ const createRow = async (req, res) => {
         const checkAcc = decodeToken(token);
         
         const existingUser = await User.findOne({ user_name: checkAcc.user_name });
-        // console.log("existingUser", existingUser)
-
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
+        }
 
         if (!newRow.website || !newRow.website_link || !newRow.position || !newRow.dimensions || !newRow.platform || !newRow.demo) {
             return res.status(400).json({ message: 'Dữ liệu được gửi về Server không đầy đủ.' })
         }
 
         newRow.createdBy = existingUser._id;
-        newRow.updatedBy = null;
-
+ 
         const excel = new Excel(newRow);
         await excel.save();
         return res.status(200).json({ message: 'Đã thêm dữ liệu mới.' });
@@ -112,25 +118,49 @@ const getRow = async (req, res) => {
     
     try {
         const searchValue = req.query.key;
-        console.log("searchValue",searchValue);
-
         if (!searchValue) {
             return res.status(400).json({ message: 'Vui lòng nhập giá trị tìm kiếm'});
         }
-        const excels = await Excel.find({
-            $or: [
-                { website: { $regex: searchValue, $options: 'i' } }, // Tìm theo tiêu đề, không phân biệt hoa thường
-                { position: { $regex: searchValue, $options: 'i' } },
-                { dimensions: { $regex: searchValue, $options: 'i' } },
-                { platform: { $regex: searchValue, $options: 'i' } },
-                { buying_method: { $regex: searchValue, $options: 'i' } },
-            ]
-        });
 
-
-        console.log("excels",excels);
-
-
+        if (!isNaN(searchValue)) {
+            numberSearchValue = parseFloat(searchValue);
+            if(numberSearchValue % 1 === 0){
+            var excels = await Excel.find({
+                $or: [
+                    { homepage: numberSearchValue },
+                    { xuyentrang: numberSearchValue },
+                    { chuyenmuc: numberSearchValue },
+                    { week: numberSearchValue },
+                    { month: numberSearchValue },
+                    { quarter: numberSearchValue },
+                ]
+            });
+            } else {
+                excels = await Excel.find({
+                    $or: [
+                        { ctr: { $regex: searchValue, $options: 'i' } },
+                        { est: { $regex: searchValue, $options: 'i' } },
+                        { note: { $regex: searchValue, $options: 'i' } },
+                    ]
+                });
+            }
+        } else {
+            excels = await Excel.find({
+                $or: [
+                    { website: { $regex: searchValue, $options: 'i' } }, // Tìm theo tiêu đề, không phân biệt hoa thường
+                    { position: { $regex: searchValue, $options: 'i' } },
+                    { dimensions: { $regex: searchValue, $options: 'i' } },
+                    { platform: { $regex: searchValue, $options: 'i' } },
+                    { buying_method: { $regex: searchValue, $options: 'i' } },
+                    { cross_site_roadblock: { $regex: searchValue, $options: 'i' } },
+                    { demo: { $regex: searchValue, $options: 'i' } },
+                    { ctr: { $regex: searchValue, $options: 'i' } },
+                    { est: { $regex: searchValue, $options: 'i' } },
+                    { note: { $regex: searchValue, $options: 'i' } },
+                ]
+            });
+        }
+        
         if (!excels || !excels.length) {
             return res.status(400).json({ message: 'Không có giá trị cần tìm kiếm'});
         } else {
@@ -158,10 +188,13 @@ const updateRow = async (req, res) => {
         }
 
         const existingUser = await User.findOne({ user_name: checkAcc.user_name });
-        // console.log("existingUser", existingUser)
-        updateRow.createdBy = null;
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
+        }
+        const row = await Excel.findById(updateRow._id);
+
+        updateRow.createdBy = row.createdBy;
         updateRow.updatedBy = existingUser._id;
-        console.log(updateRow);
 
         await Excel.updateOne({ _id: updateRow._id }, updateRow);
         
@@ -175,11 +208,20 @@ const updateRow = async (req, res) => {
 
 const deleteRow = async (req, res) => {
     try {
-        // const idRow = req.body.idRow;
         const idRow = req.body.idRow;
-        // console.log(idRow);
         if (!idRow) {
             return res.status(400).json({ message: 'Thông tin về dữ liệu bạn muốn xóa không được gửi về server.'});
+        }
+
+        const token = req.header('Authorize');
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+        const checkAcc = decodeToken(token);
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
         }
 
         Excel.deleteOne({ _id: idRow })
@@ -201,7 +243,6 @@ const createWebsite = async (req, res) => {
     try {
         const newRow = req.body;
         const token = req.header('Authorize');
-        console.log("token",token);
 
         if (!token) {
             return res.status(401).json({ message: 'Không xác thực được danh tính' })
@@ -210,8 +251,6 @@ const createWebsite = async (req, res) => {
         const checkAcc = decodeToken(token);
         
         const existingUser = await User.findOne({ user_name: checkAcc.user_name });
-        // console.log("existingUser", existingUser)
-
 
         if (!newRow.website || !newRow.website_link || !newRow.position || !newRow.dimensions || !newRow.platform || !newRow.demo) {
             return res.status(400).json({ message: 'Dữ liệu được gửi về Server không đầy đủ.' })
@@ -234,14 +273,20 @@ const createWebsite = async (req, res) => {
 const getWebsites = async (req, res) => {
     try {
         const websites = await Excel.find({});
-        // console.log("websites",websites);
-        // var websiteNames = websites.filter((item, index, array) => array.findIndex(i => i.website === item.website) === index)
-        //                      .map(item => item.website);
+        const token = req.header('Authorize');
+
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+
+        const checkAcc = decodeToken(token);
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+
         const websiteNames = Array.from(
             new Set(websites.map(site => JSON.stringify({ website: site.website, website_link: site.website_link, no: site.no })))
         ).map(str => JSON.parse(str));
 
-        return res.status(200).json(websiteNames);
+        return res.status(200).json({websiteNames : websiteNames, token: existingUser});
     } catch (error) {
         console.error(error);
         return res.status(404).json('Server error');
@@ -250,8 +295,17 @@ const getWebsites = async (req, res) => {
 
 const updateWebsite = async (req, res) => {
     try {
+        const token = req.header('Authorize');
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+        const checkAcc = decodeToken(token);
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
+        }
+
         const website = req.body.website;
-        console.log(website);
         if (!website) {
             return res.status(400).json({ message: 'Thông tin về dữ liệu bạn muốn xóa không được gửi về server.'});
         }
@@ -260,28 +314,20 @@ const updateWebsite = async (req, res) => {
         var websiteName = website.website;
         var websiteNo = website.no;
 
-        const websites = await Excel.find();
-        var isExistWebsite = websites.some(item => item.no == websiteNo);
-        var websiteNameBefore = websites.filter(item => item.no == websiteNo).map(item => item.website);
-        var websiteLinkBefore = websites.filter(item => item.no == websiteNo).map(item => item.website_link);
-        console.log("isExistWebsite",isExistWebsite);
-        console.log("websiteNameBefore",websiteNameBefore);
-        console.log("websiteLinkBefore",websiteLinkBefore);
+        const websites = await Excel.findOne({ no: websiteNo });
+        // var isExistWebsite = websites.some(item => item.no == websiteNo);
 
-        if(!isExistWebsite) {
-            return res.status(400).json({ message: 'Website cần xoá không tồn tại.'});
+        if(!websites) {
+            return res.status(400).json({ message: 'Website cần cập nhật không tồn tại.'});
         } else {
             await Excel.updateMany(
                 { no: websiteNo},
                 { $set: { 
-                    "website.$[elem].website": websiteName,
-                    "website.$[elem].website_link": websiteLink
-                } },
-                {
-                    arrayFilters: [{"elem.website":websiteNameBefore[0]}, {"elem.website_link":websiteLinkBefore[0]}]
-                }
+                    website: websiteName,
+                    website_link: websiteLink
+                } }
               );
-            return res.status(200).json({ message: 'Xoá thành công'});
+            return res.status(200).json({ message: 'Cập nhật thành công'});
         }
     } catch (error) {
         console.error(error);
@@ -291,8 +337,17 @@ const updateWebsite = async (req, res) => {
 
 const deleteWebsite = async (req, res) => {
     try {
+        const token = req.header('Authorize');
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+        const checkAcc = decodeToken(token);
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
+        }
+
         const website = req.body.website;
-        console.log(website);
         if (!website) {
             return res.status(400).json({ message: 'Thông tin về dữ liệu bạn muốn xóa không được gửi về server.'});
         }
@@ -324,19 +379,28 @@ const deleteWebsite = async (req, res) => {
 
 const getAccounts = async (req, res) => {
     try {
+        const token = req.header('Authorize');
+
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+
+        const checkAcc = decodeToken(token);
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+
         const accounts = await User.find({});
-        return res.status(200).json(accounts);
+        return res.status(200).json({accounts: accounts, currAccount: existingUser});
     } catch (error) {
         console.error(error);
         return res.status(404).json('Server error');
     }
 }
 
+//chưa dùng
 const getAccount = async (req, res) => {
     
     try {
         const searchValue = req.query.key;
-        console.log("searchValue",searchValue);
 
         if (!searchValue) {
             return res.status(400).json({ message: 'Vui lòng nhập giá trị tìm kiếm'});
@@ -351,10 +415,6 @@ const getAccount = async (req, res) => {
             ]
         });
 
-
-        console.log("excels",excels);
-
-
         if (!excels || !excels.length) {
             return res.status(400).json({ message: 'Không có giá trị cần tìm kiếm'});
         } else {
@@ -368,29 +428,32 @@ const getAccount = async (req, res) => {
 
 const updateAccount = async (req, res) => {
     try {
-        const updateRow = req.body;
+        const updateAccount = req.body.account;
         const token = req.header('Authorize');
-
         if (!token) {
             return res.status(401).json({ message: 'Không xác thực được danh tính' })
         }
-
         const checkAcc = decodeToken(token);
-        
-        if (!updateRow.position || !updateRow.dimensions || !updateRow.platform  || !updateRow.demo || !updateRow.demo_link) {
-            return res.status(400).json({   message: 'Dữ liệu được gửi về Server không đầy đủ.' })
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
         }
 
-        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
-        // console.log("existingUser", existingUser)
-        updateRow.createdBy = null;
-        updateRow.updatedBy = existingUser._id;
-        console.log(updateRow);
-
-        await Excel.updateOne({ _id: updateRow._id }, updateRow);
         
-        return res.status(200).json({ message: 'Cập nhật thành công.' });
-
+        const existingAccount = await User.findOne({ _id: updateAccount._id });
+        if(!existingAccount){
+            return res.status(400).json({ message: 'Tài khoản cần cập nhật không tồn tại.'});
+        } else {
+            await User.updateOne(
+                { _id: updateAccount._id }, 
+                { $set: { 
+                    user_name: updateAccount.user_name,
+                    fullname: updateAccount.fullname,
+                    role: updateAccount.role,
+                } }
+            );
+            return res.status(200).json({ message: 'Cập nhật thành công.' });
+        }
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Lỗi từ phía server.' });
@@ -400,19 +463,46 @@ const updateAccount = async (req, res) => {
 const deleteAccount = async (req, res) => {
     try {
         const userId = req.body.userId;
-        console.log(userId);
+
+        const token = req.header('Authorize');
+        if (!token) {
+            return res.status(401).json({ message: 'Không xác thực được danh tính' })
+        }
+        const checkAcc = decodeToken(token);
+        const existingUser = await User.findOne({ user_name: checkAcc.user_name });
+        if(existingUser.role == 'user') {
+            return res.status(400).json({ message: 'Bạn không có quyền thực hiện' })
+        }
+
         if (!userId) {
             return res.status(400).json({ message: 'Thông tin về dữ liệu bạn muốn xóa không được gửi về server.'});
         }
 
-        const users = await User.findById(userId);
+        const userDelete = await User.findOne({ _id: userId });
+        const existingUserId = existingUser._id;
 
-        if(!users) {
+        if (userDelete.role == 'admin' && !existingUserId.equals(userId)) {
+            return res.status(400).json({ message: 'Bạn không được xoá tài khoản của admin'});
+        } 
+
+        var deleteMyAccount = '';
+        if (existingUserId.equals(userId)){
+            deleteMyAccount= 'true';
+        } else {
+            deleteMyAccount= 'false';
+        }
+
+        if(!userDelete) {
             return res.status(400).json({ message: 'Tài khoản cần xoá không tồn tại.'});
         } else {
             await User.deleteOne({_id: userId});
-            return res.status(200).json({ message: 'Xoá thành công'});
-
+            await res.status(200).json({ message: 'Xoá thành công', deleteMyAccount: deleteMyAccount});
+            // req.session.destroy((err) => {
+            //     if (err) {
+            //         return res.status(500).json('Error deleting session');
+            //     }
+            //     res.send('User and session deleted');
+            // });
         }
     } catch (error) {
         console.error(error);

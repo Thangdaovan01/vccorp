@@ -1,4 +1,6 @@
 var websites=[];
+var user = {};
+
 const token = localStorage.getItem('jwtToken');
 
 
@@ -8,23 +10,29 @@ $(document).ready(function (){
     fetch('http://localhost:3000/api/websites', {
         method: "GET",
         headers: {
-            "Content-Type" : "application/json"
+            "Content-Type" : "application/json",
+            "Authorize" : token
         }
     })
     .then(response => {
         return response.json().then(data => {
             if (!response.ok) {
                 showNotification(data.message);
+                window.location.href = 'http://localhost:3000/login-register';
                 throw new Error('Network response was not ok');
             }
             return data;
         });
     })
     .then(result => {
-        websites = result;
-        console.log("RÉUKLT",websites);
-        // search();
-        showWebsites(websites);
+        websites = result.websiteNames;
+        user = result.token;
+        if(user.role == 'admin'){
+            showWebsites(websites);
+        } else {
+            window.location.href = 'http://localhost:3000/';
+            showNotification("Bạn không có quyền thực hiện")
+        }
     })
     .catch(error => {
         console.error('There was a problem with your fetch operation:', error);
@@ -35,7 +43,6 @@ $(document).ready(function (){
 $(document).ready(function (){
     $(document).on('click', '.update-btn', function(event) {
         event.stopPropagation();
-        console.log("update-btn");
 
         const websiteName = $(this).closest('.row-website').data('website-name');
         const noValue = websites.find(item => item.website === websiteName)?.no || null;
@@ -80,7 +87,6 @@ $(document).ready(function (){
             website_link : websiteLink
         }
 
-        console.log("Cập nhật",website)
         if(!confirm("Xác nhận cập nhật website")) {
             return;
         }
@@ -115,12 +121,10 @@ $(document).ready(function (){
         deleteWebsite(website);
         
     });
-
+    
 })
 
 function showWebsites (websites) {
-// console.log("showWebsites",websites)
-
     if(!websites.length){
         showNotification("Không có trang web");
         return;
@@ -129,8 +133,8 @@ function showWebsites (websites) {
     for(let i=0; i<websites.length; i++){
         const rowWebsiteHTML = `
         <tr id = "row_${websites[i].no}" class="row-website" data-website-name = "${websites[i].website}" data-website-link-name = "${websites[i].website_link}">
-            <td class="website-name"><a href="${websites[i].website_link}">${websites[i].website}</a></td>
-            <td class="website-link"><a href="${websites[i].website_link}">${websites[i].website_link}</a></td>
+            <td class="website-name"><a href="${websites[i].website_link}" target="_blank">${websites[i].website}</a></td>
+            <td class="website-link"><a href="${websites[i].website_link}" target="_blank">${websites[i].website_link}</a></td>
             <td class="action">
                 <button title="Cập nhật dữ liệu" class="update-btn"><i class="fa-solid fa-pen"></i></button>
                 <button title="Xoá" class="delete-btn"><i class="fa-solid fa-trash"></i></button>
@@ -162,7 +166,8 @@ function deleteWebsite (website) {
     fetch('http://localhost:3000/api/website', {
         method: "DELETE",
         headers: {
-            "Content-Type" : "application/json"
+            "Content-Type" : "application/json",
+            "Authorize" : token
         },
         body: JSON.stringify({website:website})
     })
@@ -177,7 +182,6 @@ function deleteWebsite (website) {
     })
     .then(result => {
         showNotification(result.message);
-        // console.log("$(`#row_${website.website}`)",$(`#row_${website.website}`));
         var websiteNo = website.no;
         $(`#row_${websiteNo}`).remove();
     })
@@ -187,12 +191,11 @@ function deleteWebsite (website) {
 }
 
 function updateWebsite (website) {
-    console.log("updateWebsite",website);
-
     fetch('http://localhost:3000/api/website', {
         method: "PUT",
         headers: {
-            "Content-Type" : "application/json"
+            "Content-Type" : "application/json",
+            "Authorize" : token
         },
         body: JSON.stringify({website:website})
     })

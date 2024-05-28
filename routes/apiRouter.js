@@ -1,12 +1,15 @@
 const express = require('express');
 const apiController = require('../controllers/apiController');
 const apiRouter = express.Router();
-
+const checkAdminRole = require('../middleware/checkAdmin');
+// const {checkAdminRole} = require('../middleware/checkAdmin');
+ 
 //login logout
 apiRouter.post('/login', apiController.login);
 apiRouter.get('/style', apiController.getStyle); 
 apiRouter.post('/register', apiController.register);
 
+// apiRouter.post('/row', (req, res, next) => {checkAdminRole(req, res, next)}, apiController.createRow);
 apiRouter.get('/row', apiController.getRow);
 apiRouter.post('/row', apiController.createRow);
 apiRouter.put('/row', apiController.updateRow);

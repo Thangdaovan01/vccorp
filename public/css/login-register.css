@@ -39,6 +39,9 @@ form {
     position: relative;
 }
 
+#registerForm {
+    margin-top: 25px;
+}
 h2 {
     color: var(--mainColor);
 }

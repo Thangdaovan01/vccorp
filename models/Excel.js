@@ -25,8 +25,8 @@ const Excel = new Schema({
     note: { type: String, default: '' },
 
     type: {type: Number},
-    createdBy: {type: Schema.Types.ObjectId, ref: 'User', default: ''},
-    updatedBy: {type: Schema.Types.ObjectId, ref: 'User', default: ''}
+    createdBy: {type: Schema.Types.ObjectId, ref: 'User'},
+    updatedBy: {type: Schema.Types.ObjectId, ref: 'User'}
 
 }, {
     timestamps: true,

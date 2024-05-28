@@ -6,23 +6,38 @@ $(document).ready(function() {
     fetch('http://localhost:3000/api/style', {
         method: "GET",
         headers: {
-            "Content-Type" : "application/json"
+            "Content-Type" : "application/json",
+            "Authorize" : token
         }
     })
     .then(response => {
         return response.json().then(data => {
             if (!response.ok) {
                 showNotification(data.message);
+                window.location.href = 'http://localhost:3000/login-register';
                 throw new Error('Network response was not ok');
             }
             return data;
         });
     })
     .then(result => {
-        styles = result;
-        // console.log("RÉUKLT",styles[1]);
-        // search();
-        showData(styles);
+        styles = result.websites;
+        user = result.token;
+
+        if(!result.accounts.length){
+            showNotification("Không có tài khoản");
+            setTimeout(function() {
+                window.location.href = 'http://localhost:3000/login-register';
+            }, 2000);
+            return;
+        }
+
+        if(user.role == 'user'){
+            showData(styles);
+        } else {
+            window.location.href = 'http://localhost:3000/admin';
+        }
+        // showData(styles);
     })
     .catch(error => {
         console.error('There was a problem with your fetch operation:', error);
@@ -31,7 +46,6 @@ $(document).ready(function() {
     $('#search_form').submit(function(event){
         event.preventDefault();
         key = $('#search_form input[type="text"]').val().toLowerCase();
-        console.log(key);
         search(key);
         $('#search_form input[type="text"]').val('');
 
@@ -298,7 +312,7 @@ async function showData2(excels) {
             ${ setPlatformHTML }
             ${ setDemoHTML }
             <td class="buying_method new-line">${ excels[i].buying_method }</td>
-            <td class="homepage">${ excels[i].price ? numterToString(excels[i].price) : "" }</td>
+            <td class="homepage">${ excels[i].homepage ? numterToString(excels[i].homepage) : "" }</td>
             <td class="cross_site_roadblock">${ excels[i].ctr ? numterToString(excels[i].ctr) : ""}</td>
             <td class="ctr">${ excels[i].est ? numterToString(excels[i].est) : ""}</td>
             <td class="est">${ excels[i].note ? numterToString(excels[i].note) : ""}</td>
@@ -700,7 +714,6 @@ function search (value) {
         })
         .then(result => {
             var data = result;
-            console.log("data",data);
             $(".table").each(function() {
                 $(this).find("thead").empty();
                 $(this).find("tbody").empty();

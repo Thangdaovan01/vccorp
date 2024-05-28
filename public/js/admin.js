@@ -1,41 +1,53 @@
 var styles = [];
+var accounts = [];
+var user = {};
 const token = localStorage.getItem('jwtToken');
 
 $(document).ready(function() {
-
     $("#priceList").addClass("active");
 
     fetch('http://localhost:3000/api/style', {
         method: "GET",
         headers: {
-            "Content-Type" : "application/json"
+            "Content-Type" : "application/json",
+            "Authorize" : token
         }
     })
     .then(response => {
         return response.json().then(data => {
             if (!response.ok) {
                 showNotification(data.message);
+                window.location.href = 'http://localhost:3000/login-register';
                 throw new Error('Network response was not ok');
             }
             return data;
         });
     })
     .then(result => {
-        styles = result;
-        // console.log("RÉUKLT",styles[1]);
-        // search();
-        showData(styles);
+        styles = result.websites;
+        accounts = result.accounts;
+        user = result.token;
+        if(!result.accounts.length){
+            showNotification("Không có tài khoản");
+            setTimeout(function() {
+                window.location.href = 'http://localhost:3000/login-register';
+            }, 500);
+            return;
+        }
+        if(user.role == 'admin'){
+            showData(styles);
+        } else {
+            window.location.href = 'http://localhost:3000/';
+            showNotification("Bạn không có quyền thực hiện")
+        }
     })
     .catch(error => {
         console.error('There was a problem with your fetch operation:', error);
     });
-   
 
-
+    
     $(document).on('click', '.create-row-container', function(event) { 
         event.stopPropagation();
-        console.log("Button clicked!");
-        // console.log(styles);
 
         var uniqueWebsites = styles.filter((item, index, array) => array.findIndex(i => i.website === item.website) === index)
                              .map(item => item.website);
@@ -69,9 +81,7 @@ $(document).ready(function() {
 
         $('.window').children().not('.select-table-to-add').remove();
         var selectedValue = event.target.value;
-        // console.log("Option change",selectedValue);
         var type = getTypeFromWebsite(selectedValue, styles);
-        console.log("Option type",type);
         var coreNewRowHTML = ``
         coreNewRowHTML += `
             <div class="website-name" value="${selectedValue}"></div>
@@ -302,8 +312,6 @@ $(document).ready(function() {
         $data.find('.link-demo').each(function() {
             linkDemoValues.push($(this).val());
         });
-        console.log("contentValues", contentValues);
-
     
         if (position == '') {
             showNotification('Hãy điền Position');
@@ -454,7 +462,6 @@ $(document).ready(function() {
 
         var selectedValue = $(this).data('value');
         var currentRow = styles.filter(function(item) { return item._id === selectedValue; });
-        // console.log("currentRow",currentRow);
         var type = currentRow[0].type;
         var currentWebsite = currentRow[0].website;
 
@@ -681,14 +688,11 @@ $(document).ready(function() {
 
     $(document).on('click', '.save-update-website', function(event) {
         event.stopPropagation();
-        console.log('click .save-update-website')
 
         var $data = $(this).siblings('div');
-        // console.log($data)
     
         var id = $(this).siblings('div.website-name').attr('value');
         var currentRow = styles.filter(function(item) { return item._id === id; });
-        // console.log("currentRow",currentRow);
         var type = currentRow[0].type;
         var website = currentRow[0].website;
 
@@ -697,9 +701,6 @@ $(document).ready(function() {
         var position = $data.find('#position').val().trim();
         var dimensions = $data.find('#dimensions').val().trim();
         var platform = $data.find('#platform').val().trim();
-        
-
-        console.log(type, website, position, dimensions, platform, buying_method, homepage, cross_site_roadblock, ctr, est)
 
         // Khởi tạo hai mảng để lưu giá trị
         var contentValues = [];
@@ -713,7 +714,27 @@ $(document).ready(function() {
         $data.find('.link-demo').each(function() {
             linkDemoValues.push($(this).val());
         });
-        console.log("contentValues", contentValues);
+
+        // let contentValues = [];
+        // let linkDemoValues = [];
+        // let seen = new Set();
+    
+        // for (let i = 0; i < contentValues1.length; i++) {
+        //     let content = contentValues1[i];
+        //     let link = linkDemoValues1[i];
+    
+        //     let keyContent = `${content[0]}|${content[1]}`;
+        //     let keyLink = `${link[0]}|${link[1]}`;
+    
+        //     if (!seen.has(keyContent) && !seen.has(keyLink)) {
+        //         contentValues.push(content);
+        //         linkDemoValues.push(link);
+        //         seen.add(keyContent);
+        //         seen.add(keyLink);
+        //     }
+        // }
+
+
 
     
         if (position == '') {
@@ -860,9 +881,7 @@ $(document).ready(function() {
                 est: est 
             }
         }
-        console.log("updateRow", updaterow);
         updateRow(updaterow);
-        // creatNewRow(newRow);
     });
 
     $(document).on('click', function(event) {
@@ -910,13 +929,27 @@ $(document).ready(function() {
     $('#search_form').submit(function(event){
         event.preventDefault();
         key = $('#search_form input[type="text"]').val().toLowerCase();
-        console.log(key);
         search(key);
         $('#search_form input[type="text"]').val('');
     });
+    
 
 });
 
+function dateView(excels) {
+    var createdAt = formatDateAndTooltip2(excels.createdAt);
+        const createdBy = accounts.find(item => item._id === excels.createdBy)?.fullname || null;
+        var updatedAt = formatDateAndTooltip2(excels.updatedAt);
+        const updatedBy = accounts.find(item => item._id === excels.updatedBy)?.fullname || null;
+        
+        var dateHTML = `Được tạo vào ${createdAt} bởi ${createdBy}`
+
+        if(updatedBy){
+            dateHTML += `
+Được cập nhật vào ${updatedAt} bởi ${updatedBy}`
+        }
+        return dateHTML;
+}
 
 async function showData(excels) {
 
@@ -975,20 +1008,18 @@ async function showData1(excels) {
     var currentWebsite = "";
     var rowspanWebsite = 0, rowspanPosition = 0, rowspanPlatform = 0, rowspanDemo = 0;
     var dataLength = excels.length;
-    // console.log("datalength",dataLength);
 
     for (let i = 0; i < dataLength; i++) {
-        // console.log("data",i);
+        //Hiện cập nhật và tạo mới
+        var dateHTML = dateView(excels[i]);
 
         if (excels[i].website != currentWebsite) {   
-            // console.log("excels[i].websit - currentWebsite",excels[i].website, currentWebsite);         
             currentWebsite = excels[i].website;
             var headerWebsiteHTML = `
                 <tr class="header-website" id="header_table_${ excels[i].website }" title="${ excels[i].website_link }">
                     <th colspan="11"><a href="${ excels[i].website_link }" target="_blank" rel="noopener noreferrer">${ excels[i].website.toUpperCase() }</a></th>
                 </tr>
             `;
-            // console.log("headerWebsiteHTML",headerWebsiteHTML);
             $(`#table_${ excels[0].type } tbody`).append(headerWebsiteHTML);
         }
 
@@ -997,14 +1028,13 @@ async function showData1(excels) {
             setDemo += `<div class="demo-item">
                 <a href="${ excels[i].demo_link[j] }" target="_blank" >${ excels[i].demo[j] }</a> 
             </div>`;
-            // console.log("setDemo",setDemo);
         }
         var setDemoHTML = ``;
         setDemoHTML = `<td class="demo"><div>${ setDemo }</div></td>`;
 
         var row = `` 
         row = `
-        <tr class="row-table" id='${ excels[i]._id }'>
+        <tr class="row-table" id='${ excels[i]._id }' title = "${dateHTML}">
             <td class="action">
                 <button id="update" data-value="${ excels[i]._id }" title="Cập nhật dữ liệu" class="btn update-btn btn-link"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteRow('${ excels[i]._id }');" title="Xoá" class="btn delete-btn btn-link"><i class="fa-solid fa-trash"></i></button>
@@ -1053,6 +1083,9 @@ async function showData2(excels) {
     var dataLength = excels.length;
 
     for (let i = 0; i < dataLength; i++) {
+        //Hiện cập nhật và tạo mới
+        var dateHTML = dateView(excels[i]);
+
         if (excels[i].website != currentWebsite) {   
             currentWebsite = excels[i].website;
             var headerWebsiteHTML = `
@@ -1074,7 +1107,7 @@ async function showData2(excels) {
 
         var row = `` 
         row += `
-        <tr class="row-table" id='${ excels[i]._id }'>
+        <tr class="row-table" id='${ excels[i]._id }' title = "${dateHTML}">
             <td class="action">
                 <button id="update" data-value="${ excels[i]._id }" title="Cập nhật dữ liệu" class="btn update-btn btn-link"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteRow('${ excels[i]._id }');" title="Xoá" class="btn delete-btn btn-link"><i class="fa-solid fa-trash"></i></button>
@@ -1123,6 +1156,9 @@ async function showData3(excels) {
     var dataLength = excels.length;
 
     for (let i = 0; i < dataLength; i++) {
+        //Hiện cập nhật và tạo mới
+        var dateHTML = dateView(excels[i]);
+        
         if (excels[i].website != currentWebsite) {   
             currentWebsite = excels[i].website;
             var headerWebsiteHTML = `
@@ -1144,7 +1180,7 @@ async function showData3(excels) {
 
         var row = `` 
         row += `
-        <tr class="row-table" id='${ excels[i]._id }'>
+        <tr class="row-table" id='${ excels[i]._id }' title = "${dateHTML}">
             <td class="action">
                 <button id="update" data-value="${ excels[i]._id }" title="Cập nhật dữ liệu" class="btn update-btn btn-link"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteRow('${ excels[i]._id }');" title="Xoá" class="btn delete-btn btn-link"><i class="fa-solid fa-trash"></i></button>
@@ -1193,7 +1229,9 @@ async function showData4(excels) {
     var dataLength = excels.length;
 
     for (let i = 0; i < dataLength; i++) {
-
+        //Hiện cập nhật và tạo mới
+        var dateHTML = dateView(excels[i]);
+        
         if (excels[i].website != currentWebsite) {   
             currentWebsite = excels[i].website;
             var headerWebsiteHTML = `
@@ -1215,7 +1253,7 @@ async function showData4(excels) {
 
         var row = `` 
         row += `
-        <tr class="row-table" id='${ excels[i]._id }'>
+        <tr class="row-table" id='${ excels[i]._id }' title = "${dateHTML}">
             <td class="action">
                 <button id="update" data-value="${ excels[i]._id }" title="Cập nhật dữ liệu" class="btn update-btn btn-link"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteRow('${ excels[i]._id }');" title="Xoá" class="btn delete-btn btn-link"><i class="fa-solid fa-trash"></i></button>
@@ -1263,7 +1301,9 @@ async function showData5(excels) {
     var dataLength = excels.length;
 
     for (let i = 0; i < dataLength; i++) {
-
+        //Hiện cập nhật và tạo mới
+        var dateHTML = dateView(excels[i]);
+        
         if (excels[i].website != currentWebsite) {   
             currentWebsite = excels[i].website;
             var headerWebsiteHTML = `
@@ -1285,7 +1325,7 @@ async function showData5(excels) {
 
         var row = `` 
         row += `
-        <tr class="row-table" id='${ excels[i]._id }'>
+        <tr class="row-table" id='${ excels[i]._id }' title = "${dateHTML}">
             <td class="action">
                 <button id="update" data-value="${ excels[i]._id }" title="Cập nhật dữ liệu" class="btn update-btn btn-link"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteRow('${ excels[i]._id }');" title="Xoá" class="btn delete-btn btn-link"><i class="fa-solid fa-trash"></i></button>
@@ -1309,12 +1349,28 @@ async function showData5(excels) {
 
 }
 
+function formatDateAndTooltip2(dateStr) {
+    const date = new Date(dateStr);
+
+    // Chuyển đổi ngày tháng sang định dạng "11 Tháng 5"
+    const day = date.getDate();
+
+    // Chuyển đổi ngày tháng sang định dạng chi tiết cho tooltip
+    const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    const dayOfWeek = daysOfWeek[date.getDay()];
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const detailedDate = `${dayOfWeek}, ngày ${day} tháng ${date.getMonth() + 1}, ${year} vào lúc ${hours}:${minutes}`;
+
+    // Tạo chuỗi HTML
+    return detailedDate;
+}
 
 // Hàm ẩn tất cả các khối
 function hideAllBlocks() {
     for (var key in blockStates) {
         if (blockStates.hasOwnProperty(key) && blockStates[key] === true) {
-            console.log("Hide Block", key);
             // Ẩn khối
             // Ví dụ: document.getElementById(key).style.display = "none";
             blockStates[key] = false;
@@ -1378,7 +1434,8 @@ async function deleteRow(idRow) {
         fetch(`http://localhost:3000/api/row`, {
             method: 'DELETE',
             headers: {
-                'Content-Type':'application/json'
+                'Content-Type':'application/json',
+                "Authorize" : token
             },
             body: JSON.stringify({ idRow: idRow })
         })
@@ -1390,15 +1447,12 @@ async function deleteRow(idRow) {
         })
         .then(result =>{
             $(`#${idRow}`).remove();
-            console.log(result);
-
             alert("Deleted");
         })
     }
 }
 
 function creatNewRow (newRow) {
-    // console.log("token",token);
     fetch('http://localhost:3000/api/row', {
         method: "POST",
         headers: {
@@ -1431,8 +1485,6 @@ function creatNewRow (newRow) {
 }
 
 function updateRow (updateRow) {
-    console.log("UPDATE");
-
     fetch('http://localhost:3000/api/row', {
         method: "PUT",
         headers: {
@@ -1454,26 +1506,26 @@ function updateRow (updateRow) {
         showNotification(result.message);
 
         // setTimeout(function() {
-        //     window.location.href = 'http://localhost:3000/admin';
+            window.location.href = 'http://localhost:3000/admin';
         // }, 500);
 
-        var $row = $(`#${updateRow._id}`);
-        $row.find('.position').text(updateRow.position);
-        $row.find('.dimensions').text(updateRow.dimensions);
-        $row.find('.platform').text(updateRow.platform);
+        // var $row = $(`#${updateRow._id}`);
+        // $row.find('.position').text(updateRow.position);
+        // $row.find('.dimensions').text(updateRow.dimensions);
+        // $row.find('.platform').text(updateRow.platform);
 
-        const lastFiveKey = Object.keys(updateRow).slice(-5);
-        for(let i=0; i<lastFiveKey.length; i++){
-            $row.find(`.${lastFiveKey[i]}`).text(numterToString(updateRow[`${lastFiveKey[i]}`]));
-        }
+        // const lastFiveKey = Object.keys(updateRow).slice(-5);
+        // for(let i=0; i<lastFiveKey.length; i++){
+        //     $row.find(`.${lastFiveKey[i]}`).text(numterToString(updateRow[`${lastFiveKey[i]}`]));
+        // }
     
-        $row.find('.action .update-btn').attr('data-value', updateRow._id);
-        $row.find('.action .delete-btn').attr('onclick', `deleteRow('${updateRow._id}');`);
+        // $row.find('.action .update-btn').attr('data-value', updateRow._id);
+        // $row.find('.action .delete-btn').attr('onclick', `deleteRow('${updateRow._id}');`);
 
-        $('.window').hide();
-        $("body").children().removeClass("blur");
+        // $('.window').hide();
+        // $("body").children().removeClass("blur");
 
-        highlightRow( $row, 'highlight-yellow')
+        // highlightRow( $row, 'highlight-yellow')
    
     })
     .catch(error => {
@@ -1502,7 +1554,6 @@ function search (value) {
         })
         .then(result => {
             var data = result;
-            console.log("data",data);
             $(".table").each(function() {
                 $(this).find("thead").empty();
                 $(this).find("tbody").empty();

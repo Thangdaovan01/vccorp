@@ -56,10 +56,9 @@ $(document).ready(function() {
         })
         .then(result => {
             localStorage.setItem('jwtToken', result.token);
-            console.log("result",result.role);
-            if(result.role==='user'){
+            if(result.role == 'user'){
                 window.location.href = 'http://localhost:3000/';
-            } else if(result.role==='admin'){
+            } else if(result.role == 'admin'){
                 window.location.href = 'http://localhost:3000/admin';
             }
         })
@@ -108,8 +107,6 @@ $(document).ready(function() {
             password: password,
             role: 'user'
         }
-
-        // console.log(account)
 
         fetch('http://localhost:3000/api/register', {
             method: "POST",
